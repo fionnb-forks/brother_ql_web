@@ -110,6 +110,10 @@
         <label for="labelText">Label Text:</label>
         <textarea rows="7" id="labelText" class="form-control" onChange="preview()" onInput="preview()"></textarea>
       </fieldset>
+      <fieldset class="form-group">
+        <label for="qrcode">QRCode Text:</label>
+        <textarea rows="7" id="qrcode" class="form-control" onChange="previewqr()" onInput="previewqr()"></textarea>
+      </fieldset>
     </div>
     <div class="col-md-4">
       <fieldset class="form-group">
@@ -118,6 +122,9 @@
         <p>Printed size w/o margins: <span id="labelWidth">?</span> cm x <span id="labelHeight">?</span> cm</p>
         <button id="printButton" type="button" class="btn btn-primary btn-block btn-lg" onClick="print()">
           <span class="glyphicon glyphicon-print" aria-hidden="true"></span> Print
+        </button>
+        <button id="printButtonQR" type="button" class="btn btn-primary btn-block btn-lg" onClick="printqr()">
+          <span class="glyphicon glyphicon-print" aria-hidden="true"></span> Print QR
         </button>
       </fieldset>
       <div class="panel panel-default">
@@ -139,8 +146,11 @@ function formData() {
   //var text = $('#labelText').val().replace(/\n/g, "%0A");
   var text = $('#labelText').val();
   if (text == '') text = ' ';
+  var qrcode = $('#qrcode').val();
+  if (qrcode == '') qrcode = '#goKONKER';
   return {
     text:        text,
+    qr: qrcode,
     font_family: $('#fontFamily option:selected').text(),
     font_size:   $('#fontSize').val(),
     label_size:  $('#labelSize option:selected').val(),
@@ -177,6 +187,31 @@ function preview() {
   });
 }
 
+function previewqr() {
+  if ($('input[name=orientation]:checked').val() == 'standard') {
+    $('.marginsTopBottom').prop('disabled', false).removeAttr('title');
+    $('.marginsLeftRight').prop('disabled', true).prop('title',  'Only relevant if rotated orientation is selected.');
+  } else {
+    $('.marginsTopBottom').prop('disabled', true).prop('title',  'Only relevant if standard orientation is selected.');
+    $('.marginsLeftRight').prop('disabled', false).removeAttr('title');
+  }
+  $.ajax({
+    type:        'POST',
+    url:         '/api/preview/qr?return_format=json',
+    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+    data:        formData(),
+    success: function( data ) {
+      $('#previewImg').attr('src', 'https://api.qrserver.com/v1/create-qr-code/?data='+$('#qrcode')+';size=100x100');
+      var img = $('#previewImg')[0];
+      img.onload = function() {
+        $('#labelWidth').html( (img.naturalWidth /300*2.54).toFixed(1));
+        $('#labelHeight').html((img.naturalHeight/300*2.54).toFixed(1));
+      };
+    }
+  });
+}
+
+
 function setStatus(data) {
   if (data['success'])
     $('#statusPanel').html('<div id="statusBox" class="alert alert-success" role="alert"><i class="glyphicon glyphicon-check"></i><span>Printing was successful.</span></div>');
@@ -197,6 +232,20 @@ function print() {
     error:    setStatus
   });
 }
+
+function printqr() {
+  $('#printButtonQR').prop('disabled', true);
+  $('#statusPanel').html('<div id="statusBox" class="alert alert-info" role="alert"><i class="glyphicon glyphicon-hourglass"></i><span>Processing print QR request...</span></div>');
+  $.ajax({
+    type:     'POST',
+    dataType: 'json',
+    data:     formData(),
+    url:      '/api/print/qrcode',
+    success:  setStatus,
+    error:    setStatus
+  });
+}
+
 
 preview()
 

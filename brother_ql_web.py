@@ -69,6 +69,7 @@ def get_label_context(request):
       'margin_bottom': float(d.get('margin_bottom', 45))/100.,
       'margin_left':   float(d.get('margin_left',   35))/100.,
       'margin_right':  float(d.get('margin_right',  35))/100.,
+      'qr':d.get('qrcode', None),
     }
     context['margin_top']    = int(context['font_size']*context['margin_top'])
     context['margin_bottom'] = int(context['font_size']*context['margin_bottom'])
@@ -142,6 +143,17 @@ def create_label_im(text, **kwargs):
     draw.multiline_text(offset, text, (0), font=im_font, align=kwargs['align'])
     return im
 
+@get('/api/preview/qr')
+@post('/api/preview/qr')
+def get_preview_image():
+    context = get_label_context(request)
+    im = create_label_im(**context)
+    return_format = request.query.get('return_format', 'png')
+    if return_format == 'json':
+        response.set_header('Content-type', 'text/json')
+        return '{"status":"1"}'
+    return '{"status":0}'
+
 @get('/api/preview/text')
 @post('/api/preview/text')
 def get_preview_image():
@@ -161,6 +173,49 @@ def image_to_png_bytes(im):
     im.save(image_buffer, format="PNG")
     image_buffer.seek(0)
     return image_buffer.read()
+
+@post('/api/print/qrcode')
+@get('/api/print/qrcode')
+def print_qrcode():
+    return_dict = {'success':False}
+
+    try:
+        context = get_label_context(request)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image
+    from io import BytesIO
+
+    r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
+        params={'data':context['qr'],'size':'100x100'})
+    im = Image.open(BytesIO(r.content))
+
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
 
 @post('/api/print/text')
 @get('/api/print/text')
