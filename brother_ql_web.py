@@ -199,6 +199,8 @@ def print_qrcode():
     logger.warning(r.content)
     im = Image.open(BytesIO(r.content))
 
+    im.save('last-qrcode.png')
+
     if context['kind'] == ENDLESS_LABEL:
         rotate = 0 if context['orientation'] == 'standard' else 90
     elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
