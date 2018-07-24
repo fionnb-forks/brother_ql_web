@@ -99,6 +99,10 @@
               <div class="input-group marginsLeftRight">
                 <input id="marginRight" class="form-control" type="number" min="0" max="200" value="35" onChange="preview()" required>  <span class="input-group-addon">%</span>
               </div>
+              <label for="qrsize">QR size:</label>
+              <div class="input-group qrsize">
+                <input id="qrsize" class="form-control" type="number" min="0" max="200" value="100" onChange="preview()" required>  <span class="input-group-addon">%</span>
+              </div>
               </div> <!-- class="chooser panel-body" -->
             </div>
           </div>
@@ -159,7 +163,8 @@ function formData() {
     margin_top:    $('#marginTop').val(),
     margin_bottom: $('#marginBottom').val(),
     margin_left:   $('#marginLeft').val(),
-    margin_right:  $('#marginRight').val()
+    margin_right:  $('#marginRight').val(),
+    qrsize: $('#qrsize').val(),
   }
 }
 
@@ -195,13 +200,14 @@ function previewqr() {
     $('.marginsTopBottom').prop('disabled', true).prop('title',  'Only relevant if standard orientation is selected.');
     $('.marginsLeftRight').prop('disabled', false).removeAttr('title');
   }
+  size = $('#qrsize').val() + 'x' + $('#qrsize').val()
   $.ajax({
     type:        'POST',
     url:         '/api/preview/qr?return_format=json',
     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     data:        formData(),
     success: function( data ) {
-      $('#previewImg').attr('src', 'https://api.qrserver.com/v1/create-qr-code/?data='+$('#qrcode').val()+'&size=100x100');
+      $('#previewImg').attr('src', 'https://api.qrserver.com/v1/create-qr-code/?data='+$('#qrcode').val()+'&size=' + size);
       var img = $('#previewImg')[0];
       img.onload = function() {
         $('#labelWidth').html( (img.naturalWidth /300*2.54).toFixed(1));

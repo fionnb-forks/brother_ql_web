@@ -70,6 +70,7 @@ def get_label_context(request):
       'margin_left':   float(d.get('margin_left',   35))/100.,
       'margin_right':  float(d.get('margin_right',  35))/100.,
       'qr':d.get('qr', None),
+      'qrsize':d.get('qrsize', '100'),
     }
     context['margin_top']    = int(context['font_size']*context['margin_top'])
     context['margin_bottom'] = int(context['font_size']*context['margin_bottom'])
@@ -191,7 +192,7 @@ def print_qrcode():
     from io import BytesIO
 
     r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
-        params={'data':context['qr'],'size':'100x100'})
+        params={'data':context['qr'],'size':'%sx%s' % (context['qrsize'],context['qrsize'])})
     logger.warning('REQUEST URL: %s' % (r.url))
     logger.warning(r)
     logger.warning('contents:')
