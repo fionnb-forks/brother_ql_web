@@ -188,7 +188,7 @@ def print_qrcode():
         return return_dict
 
     import requests
-    from PIL import Image
+    from PIL import Image, ImageOps
     from io import BytesIO
 
     r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
@@ -248,7 +248,7 @@ def print_text():
         return return_dict
 
     im = create_label_im(**context)
-    if DEBUG: im.save('sample-out.png')
+    im.save('sample-out.png')
 
     if context['kind'] == ENDLESS_LABEL:
         rotate = 0 if context['orientation'] == 'standard' else 90
