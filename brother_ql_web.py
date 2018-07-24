@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This is a web service to print labels on Brother QL label printers.
@@ -69,7 +69,7 @@ def get_label_context(request):
       'margin_bottom': float(d.get('margin_bottom', 45))/100.,
       'margin_left':   float(d.get('margin_left',   35))/100.,
       'margin_right':  float(d.get('margin_right',  35))/100.,
-      'qr':d.get('qrcode', None),
+      'qr':d.get('qr', None),
     }
     context['margin_top']    = int(context['font_size']*context['margin_top'])
     context['margin_bottom'] = int(context['font_size']*context['margin_bottom'])
@@ -181,6 +181,7 @@ def print_qrcode():
 
     try:
         context = get_label_context(request)
+        logger.warning(context)
     except LookupError as e:
         return_dict['error'] = e.msg
         return return_dict
@@ -191,6 +192,10 @@ def print_qrcode():
 
     r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
         params={'data':context['qr'],'size':'100x100'})
+    logger.warning('REQUEST URL: %s' % (r.url))
+    logger.warning(r)
+    logger.warning('contents:')
+    logger.warning(r.content)
     im = Image.open(BytesIO(r.content))
 
     if context['kind'] == ENDLESS_LABEL:

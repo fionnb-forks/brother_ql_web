@@ -201,7 +201,7 @@ function previewqr() {
     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     data:        formData(),
     success: function( data ) {
-      $('#previewImg').attr('src', 'https://api.qrserver.com/v1/create-qr-code/?data='+$('#qrcode')+';size=100x100');
+      $('#previewImg').attr('src', 'https://api.qrserver.com/v1/create-qr-code/?data='+$('#qrcode').val()+'&size=100x100');
       var img = $('#previewImg')[0];
       img.onload = function() {
         $('#labelWidth').html( (img.naturalWidth /300*2.54).toFixed(1));
@@ -218,6 +218,7 @@ function setStatus(data) {
   else
     $('#statusPanel').html('<div id="statusBox" class="alert alert-warning" role="alert"><i class="glyphicon glyphicon-alert"></i><span>Printing was unsuccessful:<br />'+data['message']+'</span></div>');
   $('#printButton').prop('disabled', false);
+  $('#printButtonQR').prop('disabled', false);
 }
 
 function print() {
