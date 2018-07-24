@@ -70,7 +70,7 @@ def get_label_context(request):
       'margin_left':   float(d.get('margin_left',   35))/100.,
       'margin_right':  float(d.get('margin_right',  35))/100.,
       'qr':d.get('qr', None),
-      'qrsize':d.get('qrsize', '100'),
+      'qrsize':int(d.get('qrsize', '100')),
     }
     context['margin_top']    = int(context['font_size']*context['margin_top'])
     context['margin_bottom'] = int(context['font_size']*context['margin_bottom'])
@@ -199,7 +199,15 @@ def print_qrcode():
     logger.warning(r.content)
     im = Image.open(BytesIO(r.content))
 
+    im = im.convert('RGB')
     im.save('last-qrcode.png')
+
+    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
+
+    im = i2.crop((0,300, 696,300+context['qrsize']))
+
+    context['width'] = 696
+    context['height'] = context['qrsize']
 
     if context['kind'] == ENDLESS_LABEL:
         rotate = 0 if context['orientation'] == 'standard' else 90
