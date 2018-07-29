@@ -230,6 +230,7 @@ function setStatus(data) {
 function print() {
   $('#printButton').prop('disabled', true);
   $('#statusPanel').html('<div id="statusBox" class="alert alert-info" role="alert"><i class="glyphicon glyphicon-hourglass"></i><span>Processing print request...</span></div>');
+  console.log(formData());
   $.ajax({
     type:     'POST',
     dataType: 'json',
@@ -243,6 +244,7 @@ function print() {
 function printqr() {
   $('#printButtonQR').prop('disabled', true);
   $('#statusPanel').html('<div id="statusBox" class="alert alert-info" role="alert"><i class="glyphicon glyphicon-hourglass"></i><span>Processing print QR request...</span></div>');
+  console.log(formData());
   $.ajax({
     type:     'POST',
     dataType: 'json',
