@@ -259,7 +259,7 @@ def print_qrcode2():
     im = im.convert('RGB')
     im.save('last-qrcode.png')
 
-    i2 = Image.new('RGB', (696, context['qrsize']), fill='#ffffff')
+    i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
 #    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
 #    im = i2.crop((0,300, 696,300+context['qrsize']))
 
@@ -267,7 +267,7 @@ def print_qrcode2():
     xoffset = 0
     while (xoffset < 696):
         i2.paste(im, (xoffset, 0))
-        xoffset += context['qrsize'] + 20
+        xoffset += context['qrsize'] + 40
 
     context['width'] = 696
     context['height'] = context['qrsize']
