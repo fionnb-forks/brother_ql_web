@@ -301,12 +301,7 @@ def print_qrcode2():
 def print_image():
     return_dict = {'success':False}
 
-    try:
-        context = get_label_context(request)
-        logger.warning(context)
-    except LookupError as e:
-        return_dict['error'] = e.msg
-        return return_dict
+    logger.warning(request)
 
     import requests
     from PIL import Image, ImageOps
