@@ -330,12 +330,13 @@ def print_qrcodetracker():
     # create multiple qrcodes on the label ... 
     xoffset = 0
 
-    i2.paste(im, (xoffset, 0))
-    xoffset += context['qrsize'] + 40
 
     im3 = create_label_im(**context)
 
     i2.paste(im3, (0, 0))
+
+    i2.paste(im, (xoffset, 0))
+    xoffset += context['qrsize'] + 40
 
     context['width'] = 696
     context['height'] = context['qrsize']
