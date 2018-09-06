@@ -296,6 +296,74 @@ def print_qrcode2():
     return return_dict
 
 
+@post('/api/print/qrcodetracker')
+@get('/api/print/qrcodetracker')
+def print_qrcodetracker():
+    return_dict = {'success':False}
+
+    try:
+        context = get_label_context(request)
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image, ImageOps
+    from io import BytesIO
+
+    r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
+        params={'data':context['qr'],'size':'%sx%s' % (context['qrsize'],context['qrsize'])})
+    logger.warning('REQUEST URL: %s' % (r.url))
+    logger.warning(r)
+    logger.warning('contents:')
+    logger.warning(r.content)
+    im = Image.open(BytesIO(r.content))
+
+    im = im.convert('RGB')
+    im.save('last-qrcode.png')
+
+    i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
+#    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
+#    im = i2.crop((0,300, 696,300+context['qrsize']))
+
+    # create multiple qrcodes on the label ... 
+    xoffset = 0
+
+    i2.paste(im, (xoffset, 0))
+    xoffset += context['qrsize'] + 40
+
+    im = create_label_im(**context)
+
+    i2.paste(im, (xoffset, 0))
+
+    context['width'] = 696
+    context['height'] = context['qrsize']
+
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
+
 @post('/api/print/image')
 @get('/api/print/image')
 def print_image():

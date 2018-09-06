@@ -135,6 +135,9 @@
         <button id="printButtonQR" type="button" class="btn btn-primary btn-block btn-lg" onClick="printqr()">
           <span class="glyphicon glyphicon-print" aria-hidden="true"></span> Print QR
         </button>
+        <button id="printButtonQRTracker" type="button" class="btn btn-primary btn-block btn-lg" onClick="printqrtracker()">
+          <span class="glyphicon glyphicon-print" aria-hidden="true"></span> Print QR Tracker
+        </button>
       </fieldset>
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -293,6 +296,20 @@ function printqr() {
     dataType: 'json',
     data:     formData(),
     url:      '/api/print/qrcode2',
+    success:  setStatus,
+    error:    setStatus
+  });
+}
+
+function printqrtracker() {
+  $('#printButtonQR').prop('disabled', true);
+  $('#statusPanel').html('<div id="statusBox" class="alert alert-info" role="alert"><i class="glyphicon glyphicon-hourglass"></i><span>Processing print QR request...</span></div>');
+  console.log(formData());
+  $.ajax({
+    type:     'POST',
+    dataType: 'json',
+    data:     formData(),
+    url:      '/api/print/qrcodetracker',
     success:  setStatus,
     error:    setStatus
   });
