@@ -333,20 +333,15 @@ def print_qrcodetracker():
     i2.paste(im, (xoffset, 0))
     xoffset += context['qrsize'] + 40
 
-    im = create_label_im(**context)
+    im3 = create_label_im(**context)
 
-    i2.paste(im, (xoffset, 0))
+    i2.paste(im3, (xoffset, 0))
 
     context['width'] = 696
     context['height'] = context['qrsize']
 
-    if context['kind'] == ENDLESS_LABEL:
-        rotate = 0 if context['orientation'] == 'standard' else 90
-    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
-        rotate = 'auto'
-
     qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
-    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=0)
 
     if not DEBUG:
         try:
