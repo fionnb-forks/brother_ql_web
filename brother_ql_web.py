@@ -348,7 +348,7 @@ def print_qrcodetracker():
     im33 = i2.convert('RGB')
     im33.save('last-text-1.png')
 
-    i2.paste(im, (0, 0))
+    i2.paste(im, (0, 100))
 
     im33 = i2.convert('RGB')
     im33.save('last-text-2.png')
