@@ -323,16 +323,22 @@ def print_qrcodetracker():
     im = im.convert('RGB')
     im.save('last-qrcode.png')
 
-    i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    if rotate == 0:
+        i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
+    else:
+        i2 = Image.new('RGB', (context['qrsize'], 696), '#ffffff')
 #    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
 #    im = i2.crop((0,300, 696,300+context['qrsize']))
 
     # create multiple qrcodes on the label ... 
     xoffset = 0
 
-
     im3 = create_label_im(**context)
-
 
     im33 = im3.convert('RGB')
     im33.save('last-text-0.png')
@@ -342,8 +348,7 @@ def print_qrcodetracker():
     im33 = i2.convert('RGB')
     im33.save('last-text-1.png')
 
-    i2.paste(im, (xoffset, 0))
-    xoffset += context['qrsize'] + 40
+    i2.paste(im, (0, 0))
 
     im33 = i2.convert('RGB')
     im33.save('last-text-2.png')
@@ -352,7 +357,7 @@ def print_qrcodetracker():
     context['height'] = context['qrsize']
 
     qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
-    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=0)
+    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
 
     if not DEBUG:
         try:
