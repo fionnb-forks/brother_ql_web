@@ -120,7 +120,7 @@
       </fieldset>
       <fieldset class="form-group">
         <label for="imagefile">Image File:</label>
-        <input type="file" id="imagefile" class="form-control" onChange="previewImage()"/>        
+        <input type="file" id="imagefile" class="form-control" onChange="printImage()"/>        
         <div id="imagefile_status"></div>
       </fieldset>
     </div>
@@ -225,7 +225,7 @@ function previewqr() {
   });
 }
 
-function previewImage() {
+function printImage() {
   // upload image to the server 
   var fileSelect = document.getElementById('imagefile');
   var files = fileSelect.files;

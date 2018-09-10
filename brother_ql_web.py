@@ -392,7 +392,7 @@ def print_image():
     im = Image.open(BytesIO(r.content))
 
     im = im.convert('RGB')
-    im.save('last-qrcode.png')
+    im.save('last-image.png')
 
     i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
 #    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
