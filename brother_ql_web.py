@@ -397,7 +397,7 @@ def print_image():
     # load image from the upload request .. 
     
     print(request)
-    print(request.FILES)
+    print(request.files)
     im = Image.open(BytesIO(request.content))
 
     im = im.convert('RGB')
