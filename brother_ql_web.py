@@ -382,13 +382,20 @@ def print_image():
 
     logger.warning(request)
 
+    try:
+        context = get_label_context(request)
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
     import requests
     from PIL import Image, ImageOps
     from io import BytesIO
 
     # load image from the upload request .. 
     
-    im = Image.open(BytesIO(r.content))
+    im = Image.open(BytesIO(request.content))
 
     im = im.convert('RGB')
     im.save('last-image.png')
