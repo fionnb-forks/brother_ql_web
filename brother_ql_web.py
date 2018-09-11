@@ -398,6 +398,7 @@ def print_image():
     
     print(request)
     print(request.files)
+    print(request.files.keys)
 
     upload = request.files.get('photos')
     name = upload.filename
