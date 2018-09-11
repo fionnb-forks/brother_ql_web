@@ -240,7 +240,7 @@ function printImage() {
     }
 
     // Add the file to the request.
-    formData.append('photos[]', file, file.name);
+    formData.append('photos', file, file.name);
   }
 
   // Set up the request.
