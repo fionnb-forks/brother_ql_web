@@ -398,7 +398,13 @@ def print_image():
     
     print(request)
     print(request.files)
-    im = Image.open(BytesIO(request.content))
+
+    upload = request.files.get('photos')
+    name = upload.filename
+    image_name = 'last-image-%s' % name
+    upload.save(image_name)
+
+    im = Image.open(image_name)
 
     im = im.convert('RGB')
     im.save('last-image.png')
