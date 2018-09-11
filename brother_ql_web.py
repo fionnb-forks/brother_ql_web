@@ -383,7 +383,8 @@ def print_image():
     logger.warning(request)
 
     try:
-        context = get_label_context(request)
+        #context = get_label_context(request)
+        context = {}
         logger.warning(context)
     except LookupError as e:
         return_dict['error'] = e.msg
@@ -399,27 +400,16 @@ def print_image():
 
     im = im.convert('RGB')
     im.save('last-image.png')
+    width, height = im.size
 
-    i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
-#    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
-#    im = i2.crop((0,300, 696,300+context['qrsize']))
-
-    # create multiple qrcodes on the label ... 
-    xoffset = 0
-    while (xoffset < 696):
-        i2.paste(im, (xoffset, 0))
-        xoffset += context['qrsize'] + 40
+    i2 = Image.new('RGB', (696, height), '#ffffff')
 
     context['width'] = 696
-    context['height'] = context['qrsize']
+    context['height'] = height
 
-    if context['kind'] == ENDLESS_LABEL:
-        rotate = 0 if context['orientation'] == 'standard' else 90
-    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
-        rotate = 'auto'
+    rotate = 0 
 
     qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
-    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
 
     if not DEBUG:
         try:
