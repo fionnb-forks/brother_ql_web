@@ -393,6 +393,7 @@ def print_image():
     import requests
     from PIL import Image, ImageOps
     from io import BytesIO
+    import os
 
     # load image from the upload request .. 
     
