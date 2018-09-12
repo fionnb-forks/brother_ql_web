@@ -417,7 +417,7 @@ def print_image():
     context['width'] = 696
     context['height'] = height
 
-    context['label_size'] = 62
+    context['label_size'] = "62"
     context['threshold'] = 70
     rotate = 0 
     
