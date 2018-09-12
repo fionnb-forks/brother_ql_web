@@ -417,9 +417,16 @@ def print_image():
     context['width'] = 696
     context['height'] = height
 
+    context['label_size'] = 62
+    context['threshold'] = 70
     rotate = 0 
+    
+
+    print('image height: %d' % height)
+
 
     qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
 
     if not DEBUG:
         try:
