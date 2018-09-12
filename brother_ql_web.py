@@ -396,19 +396,19 @@ def print_image():
 
     # load image from the upload request .. 
     
-    print(request)
-    print(request.files)
-    print(request.files.keys)
+    print('file names:')
+    for k in request.files.keys:
+        print(k)
 
     upload = request.files.get('photos')
     name = upload.filename
     image_name = 'last-image-%s' % name
+    if (os.path.exists(image_name))
+        os.remove(image_name)
     upload.save(image_name)
 
     im = Image.open(image_name)
 
-    im = im.convert('RGB')
-    im.save('last-image.png')
     width, height = im.size
 
     i2 = Image.new('RGB', (696, height), '#ffffff')
