@@ -403,7 +403,7 @@ def print_image():
     upload = request.files.get('photos')
     name = upload.filename
     image_name = 'last-image-%s' % name
-    if (os.path.exists(image_name))
+    if (os.path.exists(image_name)):
         os.remove(image_name)
     upload.save(image_name)
 
