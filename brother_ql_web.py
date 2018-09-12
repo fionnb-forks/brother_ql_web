@@ -397,7 +397,7 @@ def print_image():
     # load image from the upload request .. 
     
     print('file names:')
-    for k in request.files.keys:
+    for k in request.files.keys():
         print(k)
 
     upload = request.files.get('photos')
