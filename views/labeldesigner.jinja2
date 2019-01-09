@@ -33,6 +33,13 @@
               <div class="radio">
                 <label><input type="radio" onchange="preview()" name="orientation" value="rotated" {% if default_orientation == 'rotated' %}checked{% endif %}>Rotated</label>
               </div>
+              <label for="orientation" style="margin-top: 10px; margin-bottom: 0">Label Color:</label>
+              <div class="radio" style="margin-top: 5px;">
+                <label><input type="radio" onchange="preview()" name="color" value="black" {% if default_color == 'black' %}checked{% endif %}>Black Only</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" onchange="preview()" name="color" value="redandblack" {% if default_color == 'redandblack' %}checked{% endif %}>Red and Black</label>
+              </div>
               </div> <!-- class="chooser panel-body" -->
             </div>
           </div>
@@ -146,6 +153,7 @@ function formData() {
     label_size:  $('#labelSize option:selected').val(),
     align:       $('input[name=fontAlign]:checked').val(),
     orientation: $('input[name=orientation]:checked').val(),
+    color: $('input[name=color]:checked').val(),
     margin_top:    $('#marginTop').val(),
     margin_bottom: $('#marginBottom').val(),
     margin_left:   $('#marginLeft').val(),
