@@ -12,6 +12,6 @@
   display:table-cell;
 }
 
-textarea#labelText {
-  resize: none;
+input#imagefile {
+  height: auto;
 }

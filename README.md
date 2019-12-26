@@ -7,6 +7,13 @@ You need Python 3 for this software to work.
 This is a fork that tries to merge in various improvements that have been done in other forks,
 since pklaus seems to have stopped development or accepting pull requests.
 
+In particular, I added
+
+ * support for QR codes from alexjunq,
+ * Image upload support from tobalr,
+ * red colour support from pavittr,
+ * a font handling bugfix from ukmattbrock
+
 ![Screenshot](./static/images/screenshots/Label-Designer_Desktop.png)
 
 The web interface is [responsive](https://en.wikipedia.org/wiki/Responsive_web_design).
