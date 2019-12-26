@@ -65,6 +65,7 @@ def get_label_context(request):
       'threshold': int(d.get('threshold', 70)),
       'align':         d.get('align', 'center'),
       'orientation':   d.get('orientation', 'standard'),
+      'color':         d.get('color', 'black'),
       'margin_top':    float(d.get('margin_top',    24))/100.,
       'margin_bottom': float(d.get('margin_bottom', 45))/100.,
       'margin_left':   float(d.get('margin_left',   35))/100.,
@@ -106,7 +107,7 @@ def get_label_context(request):
 def create_label_im(text, **kwargs):
     label_type = kwargs['kind']
     im_font = ImageFont.truetype(kwargs['font_path'], kwargs['font_size'])
-    im = Image.new('L', (20, 20), 'white')
+    im = Image.new('RGB', (20, 20), 'white')
     draw = ImageDraw.Draw(im)
     # workaround for a bug in multiline_textsize()
     # when there are empty lines in the text:
@@ -124,7 +125,7 @@ def create_label_im(text, **kwargs):
     elif kwargs['orientation'] == 'rotated':
         if label_type in (ENDLESS_LABEL,):
             width = textsize[0] + kwargs['margin_left'] + kwargs['margin_right']
-    im = Image.new('L', (width, height), 'white')
+    im = Image.new('RGB', (width, height), 'white')
     draw = ImageDraw.Draw(im)
     if kwargs['orientation'] == 'standard':
         if label_type in (DIE_CUT_LABEL, ROUND_DIE_CUT_LABEL):
@@ -141,7 +142,11 @@ def create_label_im(text, **kwargs):
         else:
             horizontal_offset = kwargs['margin_left']
     offset = horizontal_offset, vertical_offset
-    draw.multiline_text(offset, text, (0), font=im_font, align=kwargs['align'])
+    fill = 'black'
+    if kwargs['color'] == 'redandblack':
+        fill = 'red'
+
+    draw.multiline_text(offset, text, fill, font=im_font, align=kwargs['align'])
     return im
 
 @get('/api/preview/qr')
@@ -478,8 +483,12 @@ def print_text():
     elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
         rotate = 'auto'
 
+    red = False
+    if context['color'] == 'redandblack':
+        red = True
+
     qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
-    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, red=red, rotate=rotate)
 
     if not DEBUG:
         try:
