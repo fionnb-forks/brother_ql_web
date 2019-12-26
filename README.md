@@ -4,6 +4,9 @@ This is a web service to print labels on Brother QL label printers.
 
 You need Python 3 for this software to work.
 
+This is a fork that tries to merge in various improvements that have been done in other forks,
+since pklaus seems to have stopped development or accepting pull requests.
+
 ![Screenshot](./static/images/screenshots/Label-Designer_Desktop.png)
 
 The web interface is [responsive](https://en.wikipedia.org/wiki/Responsive_web_design).
@@ -11,15 +14,14 @@ There's also a screenshot showing [how it looks on a smartphone](./static/images
 
 ### Installation
 
-**ProTip™**: If you know how to use Docker, you might want to use my ready-to-use Docker image to deploy this software.
-It can be found [on the Docker hub](https://hub.docker.com/r/pklaus/brother_ql_web/).  
+**ProTip™**: If you want to use this on a raspberry pi and you know how to use Docker,
+you might want to use my ready-to-use Docker image to deploy this software.
+It can be found [on the Docker hub](https://hub.docker.com/r/fionnb/rpi-brother-ql-web).  
 Otherwise, follow the instructions below.
 
 Get the code:
 
-    git clone https://github.com/pklaus/brother_ql_web.git
-
-or download [the ZIP file](https://github.com/pklaus/brother_ql_web/archive/master.zip) and unpack it.
+    git clone https://github.com/fionnb/brother_ql_web.git
 
 Install the requirements:
 
