@@ -21,10 +21,12 @@ def get_fonts(folder=None):
         if 'otf' not in line and 'ttf' not in line: continue
         parts = line.split(':')
         if len(parts) < 3:
-            logger.debug("Cannot read font so skipping: " + line)
+            logger.debug("Cannot read font, skipping: " + line)
             continue
+
         path = parts[0]
         families = parts[1].strip().split(',')
+
         styles = parts[2].split('=')[1].split(',')
         if len(families) == 1 and len(styles) > 1:
             families = [families[0]] * len(styles)
