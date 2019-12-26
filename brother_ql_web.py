@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This is a web service to print labels on Brother QL label printers.
@@ -69,6 +69,8 @@ def get_label_context(request):
       'margin_bottom': float(d.get('margin_bottom', 45))/100.,
       'margin_left':   float(d.get('margin_left',   35))/100.,
       'margin_right':  float(d.get('margin_right',  35))/100.,
+      'qr':d.get('qr', None),
+      'qrsize':int(d.get('qrsize', '100')),
     }
     context['margin_top']    = int(context['font_size']*context['margin_top'])
     context['margin_bottom'] = int(context['font_size']*context['margin_bottom'])
@@ -142,6 +144,17 @@ def create_label_im(text, **kwargs):
     draw.multiline_text(offset, text, (0), font=im_font, align=kwargs['align'])
     return im
 
+@get('/api/preview/qr')
+@post('/api/preview/qr')
+def get_preview_image():
+    context = get_label_context(request)
+    im = create_label_im(**context)
+    return_format = request.query.get('return_format', 'png')
+    if return_format == 'json':
+        response.set_header('Content-type', 'text/json')
+        return '{"status":"1"}'
+    return '{"status":0}'
+
 @get('/api/preview/text')
 @post('/api/preview/text')
 def get_preview_image():
@@ -161,6 +174,277 @@ def image_to_png_bytes(im):
     im.save(image_buffer, format="PNG")
     image_buffer.seek(0)
     return image_buffer.read()
+
+@post('/api/print/qrcode')
+@get('/api/print/qrcode')
+def print_qrcode():
+    return_dict = {'success':False}
+
+    try:
+        context = get_label_context(request)
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image, ImageOps
+    from io import BytesIO
+
+    r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
+        params={'data':context['qr'],'size':'%sx%s' % (context['qrsize'],context['qrsize'])})
+    logger.warning('REQUEST URL: %s' % (r.url))
+    logger.warning(r)
+    logger.warning('contents:')
+    logger.warning(r.content)
+    im = Image.open(BytesIO(r.content))
+
+    im = im.convert('RGB')
+    im.save('last-qrcode.png')
+
+    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
+
+    im = i2.crop((0,300, 696,300+context['qrsize']))
+
+    context['width'] = 696
+    context['height'] = context['qrsize']
+
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
+@post('/api/print/qrcode2')
+@get('/api/print/qrcode2')
+def print_qrcode2():
+    return_dict = {'success':False}
+
+    try:
+        context = get_label_context(request)
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image, ImageOps
+    from io import BytesIO
+
+    r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
+        params={'data':context['qr'],'size':'%sx%s' % (context['qrsize'],context['qrsize'])})
+    logger.warning('REQUEST URL: %s' % (r.url))
+    logger.warning(r)
+    logger.warning('contents:')
+    logger.warning(r.content)
+    im = Image.open(BytesIO(r.content))
+
+    im = im.convert('RGB')
+    im.save('last-qrcode.png')
+
+    i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
+#    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
+#    im = i2.crop((0,300, 696,300+context['qrsize']))
+
+    # create multiple qrcodes on the label ... 
+    xoffset = 0
+    while (xoffset < 696):
+        i2.paste(im, (xoffset, 0))
+        xoffset += context['qrsize'] + 40
+
+    context['width'] = 696
+    context['height'] = context['qrsize']
+
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
+
+@post('/api/print/qrcodetracker')
+@get('/api/print/qrcodetracker')
+def print_qrcodetracker():
+    return_dict = {'success':False}
+
+    try:
+        context = get_label_context(request)
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image, ImageOps
+    from io import BytesIO
+
+    r = requests.get('https://api.qrserver.com/v1/create-qr-code/', 
+        params={'data':context['qr'],'size':'%sx%s' % (context['qrsize'],context['qrsize'])})
+    logger.warning('REQUEST URL: %s' % (r.url))
+    logger.warning(r)
+    logger.warning('contents:')
+    logger.warning(r.content)
+    im = Image.open(BytesIO(r.content))
+
+    im = im.convert('RGB')
+    im.save('last-qrcode.png')
+
+    if context['kind'] == ENDLESS_LABEL:
+        rotate = 0 if context['orientation'] == 'standard' else 90
+    elif context['kind'] in (ROUND_DIE_CUT_LABEL, DIE_CUT_LABEL):
+        rotate = 'auto'
+
+    if rotate == 0:
+        i2 = Image.new('RGB', (696, context['qrsize']), '#ffffff')
+    else:
+        i2 = Image.new('RGB', (context['qrsize'], 696), '#ffffff')
+#    i2 = ImageOps.expand(im, border=300, fill='#ffffff')
+#    im = i2.crop((0,300, 696,300+context['qrsize']))
+
+    # create multiple qrcodes on the label ... 
+    xoffset = 0
+
+    im3 = create_label_im(**context)
+
+    im33 = im3.convert('RGB')
+    im33.save('last-text-0.png')
+
+    i2.paste(im3, (0, 0))
+
+    im33 = i2.convert('RGB')
+    im33.save('last-text-1.png')
+
+    i2.paste(im, (0, 100))
+
+    im33 = i2.convert('RGB')
+    im33.save('last-text-2.png')
+
+    context['width'] = 696
+    context['height'] = context['qrsize']
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, i2, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
+
+@post('/api/print/image')
+@get('/api/print/image')
+def print_image():
+    return_dict = {'success':False}
+
+    logger.warning(request)
+
+    try:
+        #context = get_label_context(request)
+        context = {}
+        logger.warning(context)
+    except LookupError as e:
+        return_dict['error'] = e.msg
+        return return_dict
+
+    import requests
+    from PIL import Image, ImageOps
+    from io import BytesIO
+    import os
+
+    # load image from the upload request .. 
+    
+    print('file names:')
+    for k in request.files.keys():
+        print(k)
+
+    upload = request.files.get('photos')
+    name = upload.filename
+    image_name = 'last-image-%s' % name
+    if (os.path.exists(image_name)):
+        os.remove(image_name)
+    upload.save(image_name)
+
+    im = Image.open(image_name)
+
+    width, height = im.size
+
+    i2 = Image.new('RGB', (696, height), '#ffffff')
+
+    context['width'] = 696
+    context['height'] = height
+
+    context['label_size'] = "62"
+    context['threshold'] = 70
+    rotate = 0 
+    
+
+    print('image height: %d' % height)
+
+
+    qlr = BrotherQLRaster(CONFIG['PRINTER']['MODEL'])
+    create_label(qlr, im, context['label_size'], threshold=context['threshold'], cut=True, rotate=rotate)
+
+    if not DEBUG:
+        try:
+            be = BACKEND_CLASS(CONFIG['PRINTER']['PRINTER'])
+            be.write(qlr.data)
+            be.dispose()
+            del be
+        except Exception as e:
+            return_dict['message'] = str(e)
+            logger.warning('Exception happened: %s', e)
+            return return_dict
+
+    return_dict['success'] = True
+    if DEBUG: return_dict['data'] = str(qlr.data)
+    return return_dict
+
+
+
 
 @post('/api/print/text')
 @get('/api/print/text')
@@ -187,7 +471,7 @@ def print_text():
         return return_dict
 
     im = create_label_im(**context)
-    if DEBUG: im.save('sample-out.png')
+    im.save('sample-out.png')
 
     if context['kind'] == ENDLESS_LABEL:
         rotate = 0 if context['orientation'] == 'standard' else 90

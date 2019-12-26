@@ -109,3 +109,6 @@ venv.bak/
 
 # idea
 .idea/*
+
+.DS_Store
+sample/*
